@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pacific Golf Estate: Interactive Investment Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Mountain Retreat -->
+    <!-- Application Structure Plan: A single-page dashboard design with a sticky top navigation bar for easy access to thematic sections: Overview, Market Drivers, Price Forecast, Comparative Analysis, and Risks. This non-linear structure replaces the report's linear flow, allowing users to explore topics of interest in any order. The goal is to transform the static report into an exploratory tool. Interactivity is key: tabs for organizing dense info (Market Drivers), accordions for concise presentation (Risks), and interactive charts (Forecast, Comparison) that update with contextual text based on user input. This structure was chosen to make the complex data highly digestible, engaging, and user-driven, enhancing understanding and retention over a simple scrollable page. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: PGE Price Projections (5, 10, 20 yrs). Goal: Show change. Viz: Line Chart (Chart.js). Interaction: Buttons to select time horizon, which highlights the point on the chart and updates a summary text block with rationale. Justification: Best for time-series data; interaction focuses user attention.
+        - Report Info: Comparative data (PGE vs. Rajpur Rd vs. Gurgaon). Goal: Compare. Viz: Bar Chart (Chart.js). Interaction: Buttons to switch between metrics (Price/Sqft vs. Appreciation %). Justification: Ideal for direct comparison; toggle avoids UI clutter.
+        - Report Info: Dehradun's growth factors (Infra, Economy, Demographics). Goal: Organize. Method: Tabbed Layout (HTML/JS). Interaction: Click tabs to reveal content. Justification: Standard UI for segmenting related topics cleanly.
+        - Report Info: Investment Risks. Goal: Organize. Method: Accordion (HTML/JS). Interaction: Click to expand/collapse. Justification: Hides text-heavy sections until needed, reducing initial cognitive load.
+        - Library/Method: Chart.js for all charts on Canvas. HTML/CSS/JS for all other interactive elements. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .chart-container { position: relative; width: 100%; max-width: 700px; margin-left: auto; margin-right: auto; height: 320px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 400px; } }
+        .nav-link.active { color: #0f766e; border-bottom-color: #0f766e; }
+        .tab-btn.active { background-color: #0d9488; color: #ffffff; }
+        .forecast-btn.active { background-color: #0f766e; color: #ffffff; transform: scale(1.05); }
+        .accordion-header.active .accordion-icon { transform: rotate(180deg); }
+    </style>
+</head>
+<body class="bg-stone-50 text-slate-800">
+
+    <nav id="navbar" class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-teal-800">PGE Investment Analysis</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#overview" class="nav-link text-gray-600 hover:text-teal-700 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent transition-all duration-300">Overview</a>
+                        <a href="#drivers" class="nav-link text-gray-600 hover:text-teal-700 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent transition-all duration-300">Market Drivers</a>
+                        <a href="#forecast" class="nav-link text-gray-600 hover:text-teal-700 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent transition-all duration-300">Price Forecast</a>
+                        <a href="#comparison" class="nav-link text-gray-600 hover:text-teal-700 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent transition-all duration-300">Comparison</a>
+                        <a href="#risks" class="nav-link text-gray-600 hover:text-teal-700 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent transition-all duration-300">Risks</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+
+        <header class="text-center mb-16">
+            <h2 class="text-4xl md:text-5xl font-extrabold tracking-tight text-teal-900">Pacific Golf Estate: An Interactive Investment Analysis</h2>
+            <p class="mt-4 max-w-3xl mx-auto text-lg text-slate-600">An exploration of the long-term capital appreciation potential of Pacific Golf Estate, driven by Dehradun's transformative growth and the project's premium attributes.</p>
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+                    <p class="text-sm font-medium text-slate-500">Current Price (PGE)</p>
+                    <p class="text-3xl font-bold text-teal-700">₹9,000 <span class="text-lg font-medium">/sqft</span></p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+                    <p class="text-sm font-medium text-slate-500">5-Year Projected Growth</p>
+                    <p class="text-3xl font-bold text-teal-700">+75-100%</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+                    <p class="text-sm font-medium text-slate-500">Kulhan Area Growth (5 Yrs)</p>
+                    <p class="text-3xl font-bold text-teal-700">+97.4%</p>
+                </div>
+            </div>
+        </header>
+
+        <section id="overview" class="py-12 scroll-mt-16">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-slate-900">The PGE Advantage: A Premium Proposition</h3>
+                <p class="mt-3 max-w-2xl mx-auto text-md text-slate-600">This section explores the core attributes that define Pacific Golf Estate as a premier investment. We'll look at its unparalleled amenities, serene natural setting, and strong historical growth, which together form a unique value proposition for discerning buyers and position it for exceptional long-term appreciation.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+                    <div class="flex items-center">
+                        <span class="text-3xl">⛳️</span>
+                        <h4 class="ml-4 text-xl font-semibold">Unmatched Luxury Amenities</h4>
+                    </div>
+                    <p class="mt-4 text-slate-600">PGE offers a lifestyle, not just a residence. With a signature 9-hole golf course, a helipad, private jacuzzis, a modern clubhouse, and comprehensive security, it caters to a high-net-worth clientele seeking exclusivity and convenience.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+                    <div class="flex items-center">
+                        <span class="text-3xl">🏞️</span>
+                        <h4 class="ml-4 text-xl font-semibold">Natural Serenity & Wellness</h4>
+                    </div>
+                    <p class="mt-4 text-slate-600">The estate boasts breathtaking mountain views and a tranquil environment. Dehradun's moderate AQI, a stark contrast to metros, strongly appeals to those prioritizing health and a superior quality of life, aligning with the "wellness real estate" trend.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+                    <div class="flex items-center">
+                        <span class="text-3xl">📈</span>
+                        <h4 class="ml-4 text-xl font-semibold">Proven Historical Growth</h4>
+                    </div>
+                    <p class="mt-4 text-slate-600">The Kulhan micro-market, home to PGE, has demonstrated explosive growth, with property rates appreciating 97.4% in the last 5 years. This track record signals robust demand and strong value recognition, outperforming the broader Dehradun market.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="drivers" class="py-12 scroll-mt-16">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-slate-900">Dehradun's Growth Engine</h3>
+                <p class="mt-3 max-w-2xl mx-auto text-md text-slate-600">Dehradun's real estate boom isn't accidental. This section breaks down the key catalysts propelling the city's transformation. Through the tabs below, you can explore the transformative infrastructure projects, robust economic fundamentals, and favorable demographic shifts that together create a powerful foundation for sustained property appreciation.</p>
+            </div>
+            <div>
+                <div class="mb-6 flex justify-center space-x-2 md:space-x-4 p-1 bg-stone-200 rounded-lg">
+                    <button class="tab-btn active px-4 py-2 text-sm md:text-base font-semibold rounded-md transition-colors duration-300" data-tab="infrastructure">Infrastructure</button>
+                    <button class="tab-btn px-4 py-2 text-sm md:text-base font-semibold text-slate-600 rounded-md transition-colors duration-300" data-tab="economy">Economy</button>
+                    <button class="tab-btn px-4 py-2 text-sm md:text-base font-semibold text-slate-600 rounded-md transition-colors duration-300" data-tab="demographics">Demographics</button>
+                </div>
+                <div id="tab-content" class="bg-white p-8 rounded-lg shadow-md">
+                    <div class="tab-pane active" id="infrastructure-content">
+                        <h4 class="text-2xl font-bold mb-4">Transformative Infrastructure</h4>
+                        <p class="text-slate-600">Upgraded connectivity is shrinking the distance between Dehradun and major hubs, making it more accessible than ever. The **Delhi-Dehradun Expressway** will cut travel time to just 2.5 hours, a major draw for NCR buyers. Internally, the **Smart City Mission** and new elevated corridors are enhancing livability by reducing congestion and modernizing urban spaces. These projects collectively boost Dehradun's appeal for both long-term residents and investors.</p>
+                    </div>
+                    <div class="tab-pane hidden" id="economy-content">
+                        <h4 class="text-2xl font-bold mb-4">Robust Economic Fundamentals</h4>
+                        <p class="text-slate-600">Uttarakhand's economy provides a strong foundation for real estate growth. With a projected GDP growth of **6.6%** for 2024-25 and a per capita income rising **11.3%** (outpacing the national average), local purchasing power is increasing. This creates a resilient local buyer base capable of investing in premium properties, complementing the demand from outside investors.</p>
+                    </div>
+                    <div class="tab-pane hidden" id="demographics-content">
+                        <h4 class="text-2xl font-bold mb-4">Favorable Demographic Shifts</h4>
+                        <p class="text-slate-600">Dehradun is attracting a diverse mix of people. A significant influx of buyers from the **NCR** seek a better quality of life and second homes. The city is also a favored destination for **retirees** and a hub for **students**, creating strong demand for both ownership and rental properties. This diversified demand profile ensures sustained market absorption and stability.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="forecast" class="py-12 scroll-mt-16">
+             <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-slate-900">Future Value: A Price Appreciation Forecast</h3>
+                <p class="mt-3 max-w-2xl mx-auto text-md text-slate-600">This section presents a long-term price forecast for Pacific Golf Estate, synthesized from historical data, infrastructure timelines, and economic projections. Use the buttons to select a time horizon and see how the investment is projected to grow. The chart visualizes the appreciation curve, while the text below provides the specific price range and rationale for that period.</p>
+            </div>
+            <div class="bg-white p-4 md:p-8 rounded-xl shadow-lg border border-slate-200">
+                <div class="chart-container">
+                    <canvas id="forecastChart"></canvas>
+                </div>
+                <div class="mt-8 text-center flex justify-center flex-wrap gap-3">
+                    <button class="forecast-btn active px-5 py-2.5 font-medium bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-100 focus:z-10 transition-all duration-300" data-year="5">5-Year Outlook</button>
+                    <button class="forecast-btn px-5 py-2.5 font-medium bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-100 focus:z-10 transition-all duration-300" data-year="10">10-Year Outlook</button>
+                    <button class="forecast-btn px-5 py-2.5 font-medium bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-100 focus:z-10 transition-all duration-300" data-year="20">20-Year Outlook</button>
+                </div>
+                <div id="forecast-details" class="mt-8 p-6 bg-teal-50/50 rounded-lg text-center">
+                    <!-- Details will be populated by JS -->
+                </div>
+            </div>
+        </section>
+
+        <section id="comparison" class="py-12 scroll-mt-16">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-slate-900">Market Context: Comparative Analysis</h3>
+                <p class="mt-3 max-w-2xl mx-auto text-md text-slate-600">How does Pacific Golf Estate stack up against other key markets? This interactive chart compares PGE with the prestigious Rajpur Road, the overall Dehradun market, and the mature Tier-1 city of Gurgaon. Use the buttons to switch between viewing 'Price per Sqft' and historical 'Appreciation %' to understand PGE's unique position and growth potential.</p>
+            </div>
+             <div class="bg-white p-4 md:p-8 rounded-xl shadow-lg border border-slate-200">
+                <div class="chart-container">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+                 <div class="mt-8 text-center flex justify-center flex-wrap gap-3">
+                    <button class="comparison-btn px-5 py-2.5 font-medium bg-teal-600 text-white border border-gray-200 rounded-lg shadow-sm hover:bg-teal-700 focus:z-10 transition-all duration-300" data-metric="price">Price / Sqft</button>
+                    <button class="comparison-btn px-5 py-2.5 font-medium bg-white text-slate-700 border border-gray-200 rounded-lg shadow-sm hover:bg-gray-100 focus:z-10 transition-all duration-300" data-metric="appreciation">Appreciation %</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="risks" class="py-12 scroll-mt-16">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-slate-900">Investment Considerations & Risks</h3>
+                <p class="mt-3 max-w-2xl mx-auto text-md text-slate-600">A balanced investment decision requires acknowledging potential risks. This section outlines key considerations that could influence the market. Click on each risk factor to expand and read the detailed analysis. This helps in forming a comprehensive and prudent investment strategy.</p>
+            </div>
+            <div class="max-w-3xl mx-auto space-y-4">
+                <div class="accordion-item bg-white rounded-lg shadow-sm border border-slate-200">
+                    <div class="accordion-header flex justify-between items-center p-5 cursor-pointer">
+                        <h4 class="text-lg font-semibold">Regulatory & Development Hurdles</h4>
+                        <span class="accordion-icon text-teal-700 transition-transform duration-300">▼</span>
+                    </div>
+                    <div class="accordion-content hidden p-5 border-t border-slate-200">
+                        <p class="text-slate-600">Rapid, unplanned development can strain municipal services. While the government is improving oversight, investors should prioritize well-planned, RERA and MDDA-approved projects like PGE to mitigate risks associated with unregulated growth and ensure long-term livability.</p>
+                    </div>
+                </div>
+                <div class="accordion-item bg-white rounded-lg shadow-sm border border-slate-200">
+                    <div class="accordion-header flex justify-between items-center p-5 cursor-pointer">
+                        <h4 class="text-lg font-semibold">Infrastructure Project Delays</h4>
+                        <span class="accordion-icon text-teal-700 transition-transform duration-300">▼</span>
+                    </div>
+                    <div class="accordion-content hidden p-5 border-t border-slate-200">
+                        <p class="text-slate-600">Large-scale projects like the Delhi-Dehradun Expressway can face land acquisition and legal delays. While the long-term benefit is certain, significant postponements could temper short-to-medium-term appreciation. Monitoring project milestones is crucial.</p>
+                    </div>
+                </div>
+                 <div class="accordion-item bg-white rounded-lg shadow-sm border border-slate-200">
+                    <div class="accordion-header flex justify-between items-center p-5 cursor-pointer">
+                        <h4 class="text-lg font-semibold">Environmental & Carrying Capacity</h4>
+                        <span class="accordion-icon text-teal-700 transition-transform duration-300">▼</span>
+                    </div>
+                    <div class="accordion-content hidden p-5 border-t border-slate-200">
+                        <p class="text-slate-600">As a mountain state, Uttarakhand is environmentally sensitive. Unchecked urbanization could strain the region's carrying capacity. Investing in projects with strong environmental compliance and within designated safe zones is a key risk mitigation strategy.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 text-white">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-sm">
+            <p>&copy; 2025 Investment Analysis. Data synthesized from the report 'Pacific Golf Estate, Dehradun: A Long-Term Capital Appreciation Forecast'.</p>
+            <p class="text-slate-400 mt-2">This interactive tool is for informational purposes only and does not constitute financial advice.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            const forecastData = {
+                '5': {
+                    yearLabel: '2030',
+                    priceRange: '₹15,800 - ₹18,100',
+                    increase: '75% - 100%',
+                    rationale: 'This period will see the full impact of the Delhi-Dehradun Expressway. The initial surge in property values, driven by improved connectivity and livability, is expected to be most pronounced during these five years.',
+                    pointIndex: 1
+                },
+                '10': {
+                    yearLabel: '2035',
+                    priceRange: '₹24,300 - ₹31,700',
+                    increase: '170% - 250%',
+                    rationale: 'Growth will be driven by the deepening of Dehradun\'s economic base and its firm establishment as a desirable residential hub, solidifying its position as a top Tier-2 city.',
+                    pointIndex: 2
+                },
+                '20': {
+                    yearLabel: '2045',
+                    priceRange: '₹75,000 - ₹130,000',
+                    increase: '730% - 1340%',
+                    rationale: 'Over two decades, Dehradun\'s transformation is expected to be complete. PGE, as a landmark project, will benefit from decades of compounding appreciation in a mature market.',
+                    pointIndex: 3
+                }
+            };
+
+            const forecastChartCtx = document.getElementById('forecastChart').getContext('2d');
+            let forecastChart;
+
+            function createForecastChart() {
+                if (forecastChart) {
+                    forecastChart.destroy();
+                }
+                forecastChart = new Chart(forecastChartCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['2025', '2030', '2035', '2045'],
+                        datasets: [{
+                            label: 'Projected Price/Sqft (Low End)',
+                            data: [9000, 15800, 24300, 75000],
+                            borderColor: '#0d9488',
+                            backgroundColor: 'rgba(13, 148, 136, 0.1)',
+                            fill: true,
+                            tension: 0.1,
+                            pointBackgroundColor: '#0d9488',
+                            pointBorderColor: '#fff',
+                            pointHoverRadius: 7,
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: '#0d9488',
+                            pointRadius: 5
+                        }, {
+                            label: 'Projected Price/Sqft (High End)',
+                            data: [9000, 18100, 31700, 130000],
+                            borderColor: '#0f766e',
+                            backgroundColor: 'rgba(15, 118, 110, 0.2)',
+                            fill: true,
+                            tension: 0.1,
+                            pointBackgroundColor: '#0f766e',
+                            pointBorderColor: '#fff',
+                            pointHoverRadius: 7,
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: '#0f766e',
+                            pointRadius: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value, index, values) {
+                                        return '₹' + (value / 1000) + 'k';
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(context.parsed.y);
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        interaction: {
+                            intersect: false,
+                            mode: 'index',
+                        },
+                    }
+                });
+            }
+
+            const forecastDetailsContainer = document.getElementById('forecast-details');
+            const forecastButtons = document.querySelectorAll('.forecast-btn');
+            
+            function updateForecastDetails(year) {
+                const data = forecastData[year];
+                forecastDetailsContainer.innerHTML = `
+                    <h4 class="text-xl font-bold text-teal-800">Outlook for ${data.yearLabel}</h4>
+                    <p class="mt-2 text-3xl font-extrabold text-slate-800">${data.priceRange} <span class="text-xl font-medium">/sqft</span></p>
+                    <p class="mt-1 text-lg font-semibold text-teal-700">Cumulative Increase: ${data.increase}</p>
+                    <p class="mt-4 text-slate-600 text-left max-w-xl mx-auto">${data.rationale}</p>
+                `;
+                
+                forecastButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.year === year) {
+                        btn.classList.add('active');
+                    }
+                });
+
+                forecastChart.data.datasets.forEach(dataset => {
+                    dataset.pointRadius = dataset.data.map((_, i) => i === data.pointIndex ? 8 : 5);
+                    dataset.pointBackgroundColor = dataset.data.map((_, i) => i === data.pointIndex ? '#fde047' : (dataset.label.includes('Low') ? '#0d9488' : '#0f766e'));
+                });
+                forecastChart.update();
+            }
+
+            forecastButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    updateForecastDetails(e.target.dataset.year);
+                });
+            });
+
+            const comparisonChartCtx = document.getElementById('comparisonChart').getContext('2d');
+            let comparisonChart;
+
+            const comparisonData = {
+                price: {
+                    labels: ['PGE', 'Rajpur Road', 'Dehradun Avg', 'Gurgaon'],
+                    values: [8950, 14520, 6332, 25000], 
+                    label: 'Avg. Price / Sqft (₹)',
+                    backgroundColor: ['#0d9488', '#14b8a6', '#5eead4', '#99f6e4']
+                },
+                appreciation: {
+                    labels: ['PGE (Kulhan, 3yr)', 'Rajpur Road (YoY)', 'Dehradun (4yr)', 'Gurgaon (2yr)'],
+                    values: [70, 19.57, 68, 76],
+                    label: 'Appreciation (%)',
+                    backgroundColor: ['#0f766e', '#0d9488', '#14b8a6', '#5eead4']
+                }
+            };
+            
+            function createComparisonChart(metric = 'price') {
+                 if (comparisonChart) {
+                    comparisonChart.destroy();
+                }
+                const data = comparisonData[metric];
+                comparisonChart = new Chart(comparisonChartCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: data.label,
+                            data: data.values,
+                            backgroundColor: data.backgroundColor,
+                            borderColor: data.backgroundColor.map(c => c.replace('0.8', '1')),
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                         scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                             tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                             if (metric === 'price') {
+                                                label += new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(context.parsed.y);
+                                             } else {
+                                                label += context.parsed.y + '%';
+                                             }
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            const comparisonButtons = document.querySelectorAll('.comparison-btn');
+            comparisonButtons.forEach(button => {
+                button.addEventListener('click', e => {
+                    const metric = e.target.dataset.metric;
+                    createComparisonChart(metric);
+                    comparisonButtons.forEach(btn => {
+                        btn.classList.remove('bg-teal-600', 'text-white');
+                        btn.classList.add('bg-white', 'text-slate-700');
+                    });
+                    e.target.classList.add('bg-teal-600', 'text-white');
+                    e.target.classList.remove('bg-white', 'text-slate-700');
+                });
+            });
+
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+
+                    tabPanes.forEach(pane => pane.classList.add('hidden'));
+                    document.getElementById(`${e.target.dataset.tab}-content`).classList.remove('hidden');
+                });
+            });
+
+            const accordionItems = document.querySelectorAll('.accordion-item');
+            accordionItems.forEach(item => {
+                const header = item.querySelector('.accordion-header');
+                header.addEventListener('click', () => {
+                    const content = item.querySelector('.accordion-content');
+                    const wasActive = header.classList.contains('active');
+                    
+                    document.querySelectorAll('.accordion-header').forEach(h => h.classList.remove('active'));
+                    document.querySelectorAll('.accordion-content').forEach(c => c.classList.add('hidden'));
+
+                    if (!wasActive) {
+                       header.classList.add('active');
+                       content.classList.remove('hidden');
+                    }
+                });
+            });
+            
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 80) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+
+            createForecastChart();
+            updateForecastDetails('5');
+            createComparisonChart('price');
+        });
+    </script>
+
+</body>
+</html>
